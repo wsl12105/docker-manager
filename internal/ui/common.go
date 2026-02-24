@@ -1,4 +1,4 @@
-// Package ui 用户界面组件
+// Package ui 
 package ui
 
 import (
@@ -8,9 +8,10 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/wsl12105/docker-manager/internal/version"
 )
 
-// Common 通用UI组件
+// Common 
 type Common struct {
 	App         *tview.Application
 	Pages       *tview.Pages
@@ -19,17 +20,13 @@ type Common struct {
 	Table       *tview.Table
 	IsOperating bool
 	SelectedID  string
-	AppName     string
-	AppVersion  string
 }
 
-// NewCommon 创建通用UI组件
-func NewCommon(appName, appVersion string) *Common {
+// NewCommon 
+func NewCommon() *Common {
 	c := &Common{
-		App:        tview.NewApplication(),
-		Pages:      tview.NewPages(),
-		AppName:    appName,
-		AppVersion: appVersion,
+		App:   tview.NewApplication(),
+		Pages: tview.NewPages(),
 	}
 
 	c.Header = tview.NewTextView().
@@ -68,12 +65,17 @@ func NewCommon(appName, appVersion string) *Common {
 	return c
 }
 
-// resetHeader 重置头部
-func (c *Common) resetHeader() {
-	c.Header.SetText(fmt.Sprintf("\n[white::b]%s - %s[-:-:-]", c.AppName, c.AppVersion))
+// GetVersionString 
+func (c *Common) GetVersionString() string {
+	return version.GetVersionString()
 }
 
-// RunAsyncAction 异步执行操作
+// resetHeader 
+func (c *Common) resetHeader() {
+	c.Header.SetText(fmt.Sprintf("\n[white::b]%s[-:-:-]", c.GetVersionString()))
+}
+
+// RunAsyncAction 
 func (c *Common) RunAsyncAction(msg string, action func(), onComplete func()) {
 	c.IsOperating = true
 	row, _ := c.Table.GetSelection()
@@ -92,7 +94,7 @@ func (c *Common) RunAsyncAction(msg string, action func(), onComplete func()) {
 	}()
 }
 
-// ShowConfirm 显示确认对话框
+// ShowConfirm 
 func (c *Common) ShowConfirm(message string, onConfirm func(), onCancel func()) {
 	modal := tview.NewModal().
 		SetText(message).
@@ -110,7 +112,7 @@ func (c *Common) ShowConfirm(message string, onConfirm func(), onCancel func()) 
 	c.App.SetFocus(modal)
 }
 
-// ShowInput 显示输入对话框
+// ShowInput 
 func (c *Common) ShowInput(label string, onSubmit func(string)) {
 	form := tview.NewForm()
 	input := tview.NewInputField().SetLabel(label).SetFieldWidth(30)
@@ -141,7 +143,7 @@ func (c *Common) ShowInput(label string, onSubmit func(string)) {
 	c.App.SetFocus(form)
 }
 
-// RunExec 执行容器命令
+// RunExec 
 func (c *Common) RunExec(containerID string) {
 	c.App.Suspend(func() {
 		cmd := exec.Command("docker", "exec", "-it", containerID, "/bin/sh")
@@ -152,9 +154,26 @@ func (c *Common) RunExec(containerID string) {
 	})
 }
 
-// SetupInputCapture 设置输入捕获
+// ShowError 
+func (c *Common) ShowError(message string, onClose func()) {
+	modal := tview.NewModal().
+		SetText(message).
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			c.Pages.RemovePage("error")
+			c.App.SetFocus(c.Table)
+			if onClose != nil {
+				onClose()
+			}
+		})
+	c.Pages.AddPage("error", modal, true, true)
+	c.App.SetFocus(modal)
+}
+
+// SetupInputCapture 
 func (c *Common) SetupInputCapture(handlers map[rune]func()) {
 	c.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// Ctrl+C 
 		if event.Key() == tcell.KeyCtrlC {
 			c.App.Stop()
 			return nil

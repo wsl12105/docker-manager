@@ -1,23 +1,56 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/wsl12105/docker-manager/internal/docker"
 	"github.com/wsl12105/docker-manager/internal/ui"
 )
 
 func main() {
-	// 创建Docker客户端
+	
 	dockerClient, err := docker.NewClient()
 	if err != nil {
-		log.Fatalf("无法创建Docker客户端: %v", err)
+		fmt.Printf("❌ Unable to create Docker client: %v\n", err)
+		fmt.Println("Please ensure that Docker is installed and configured correctly")
+		fmt.Println("\nPress Ctrl+C to Exit")
+		
+	
+		done := make(chan bool)
+		go func() {
+			os.Stdin.Read(make([]byte, 1))
+			done <- true
+		}()
+		<-done
+		os.Exit(1)
 	}
 	defer dockerClient.Close()
 
-	// 创建并运行应用
+	
+	if err := dockerClient.CheckDockerRunning(); err != nil {
+		fmt.Printf("❌%v\n", err)
+		fmt.Println("Please start the Docker service:")
+		fmt.Println("  • Linux: sudo systemctl start docker")
+		//fmt.Println("  • macOS: open -a Docker")
+		//fmt.Println("  • Windows: 启动 Docker Desktop")
+		fmt.Println("\nPress Ctrl+C to Exit")
+		
+
+		done := make(chan bool)
+		go func() {
+			os.Stdin.Read(make([]byte, 1))
+			done <- true
+		}()
+		<-done
+		os.Exit(1)
+	}
+
+
 	app := ui.NewApp(dockerClient)
+
 	if err := app.Run(); err != nil {
-		log.Fatalf("应用运行失败: %v", err)
+		fmt.Printf("❌ DM execution failed: %v\n", err)
+		os.Exit(1)
 	}
 }

@@ -1,4 +1,3 @@
-// Package ui 用户界面主包
 package ui
 
 import (
@@ -8,7 +7,7 @@ import (
 	"github.com/wsl12105/docker-manager/internal/docker"
 )
 
-// App 应用程序主结构
+// App 
 type App struct {
 	common      *Common
 	docker      *docker.Client
@@ -17,9 +16,9 @@ type App struct {
 	currentMode string
 }
 
-// NewApp 创建新应用
+// NewApp 
 func NewApp(dockerClient *docker.Client) *App {
-	common := NewCommon("DM (Docker Manager)", "v1.4.9")
+	common := NewCommon()
 	app := &App{
 		common:      common,
 		docker:      dockerClient,
@@ -34,7 +33,7 @@ func NewApp(dockerClient *docker.Client) *App {
 	return app
 }
 
-// setupUI 设置UI布局
+// setupUI 
 func (a *App) setupUI() {
 	mainFlex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -51,7 +50,7 @@ func (a *App) setupUI() {
 	a.common.App.SetRoot(layout, true)
 }
 
-// setupHandlers 设置事件处理器
+// setupHandlers 
 func (a *App) setupHandlers() {
 	handlers := map[rune]func(){
 		'c': a.switchToContainerMode,
@@ -141,7 +140,7 @@ func (a *App) setupHandlers() {
 	a.common.SetupInputCapture(handlers)
 }
 
-// startRefreshLoop 启动刷新循环
+// startRefreshLoop 
 func (a *App) startRefreshLoop() {
 	go func() {
 		for {
@@ -160,7 +159,7 @@ func (a *App) startRefreshLoop() {
 	}()
 }
 
-// switchToContainerMode 切换到容器模式
+// switchToContainerMode 
 func (a *App) switchToContainerMode() {
 	a.currentMode = "container"
 	a.common.Table.SetTitle(" Containers List ")
@@ -168,7 +167,7 @@ func (a *App) switchToContainerMode() {
 	a.containerUI.RefreshList()
 }
 
-// switchToImageMode 切换到镜像模式
+// switchToImageMode 
 func (a *App) switchToImageMode() {
 	a.currentMode = "image"
 	a.common.Table.SetTitle(" Images List ")
@@ -176,7 +175,7 @@ func (a *App) switchToImageMode() {
 	a.imageUI.RefreshList()
 }
 
-// Run 运行应用
+// Run 
 func (a *App) Run() error {
 	a.switchToContainerMode()
 	return a.common.App.Run()

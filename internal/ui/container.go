@@ -1,4 +1,4 @@
-// Package ui 用户界面组件
+// Package ui 
 package ui
 
 import (
@@ -7,20 +7,19 @@ import (
 	"io"
 	"strings"
 
-	// 这个包用于类型定义，虽然代码中没有直接使用，但编译时需要
-	_ "github.com/docker/docker/api/types"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/wsl12105/docker-manager/internal/docker"
+	"github.com/wsl12105/docker-manager/internal/version"
 )
 
-// ContainerUI 容器UI管理器
+// ContainerUI 
 type ContainerUI struct {
 	common *Common
 	docker *docker.Client
 }
 
-// NewContainerUI 创建容器UI管理器
+// NewContainerUI 
 func NewContainerUI(common *Common, docker *docker.Client) *ContainerUI {
 	return &ContainerUI{
 		common: common,
@@ -28,12 +27,12 @@ func NewContainerUI(common *Common, docker *docker.Client) *ContainerUI {
 	}
 }
 
-// RefreshList 刷新容器列表
+// RefreshList 
 func (ui *ContainerUI) RefreshList() {
 	selRow, _ := ui.common.Table.GetSelection()
 	ui.common.Table.Clear()
 
-	// 设置表头
+	// 
 	headers := []string{"ID", "IMAGE", "STATUS", "CPU", "MEM", "NAMES", "PORTS"}
 	expansions := []int{1, 3, 2, 1, 1, 2, 3}
 	for i, h := range headers {
@@ -44,7 +43,7 @@ func (ui *ContainerUI) RefreshList() {
 		ui.common.Table.SetCell(0, i, cell)
 	}
 
-	// 获取容器列表
+	// 
 	list, err := ui.docker.ListContainers(true)
 	if err != nil {
 		return
@@ -60,7 +59,7 @@ func (ui *ContainerUI) RefreshList() {
 			cpu, mem = ui.getStats(cont.ID)
 		}
 
-		// 处理端口信息
+		
 		var portStrs []string
 		for _, p := range cont.Ports {
 			if p.PublicPort != 0 {
@@ -70,13 +69,13 @@ func (ui *ContainerUI) RefreshList() {
 			}
 		}
 
-		// 处理容器名称
+
 		name := ""
 		if len(cont.Names) > 0 {
 			name = strings.TrimPrefix(cont.Names[0], "/")
 		}
 
-		// 设置单元格
+	
 		ui.common.Table.SetCell(i+1, 0, tview.NewTableCell(id).SetTextColor(color).SetReference(cont.ID))
 		ui.common.Table.SetCell(i+1, 1, tview.NewTableCell(cont.Image).SetTextColor(color))
 		ui.common.Table.SetCell(i+1, 2, tview.NewTableCell(cont.Status).SetTextColor(color))
@@ -86,11 +85,11 @@ func (ui *ContainerUI) RefreshList() {
 		ui.common.Table.SetCell(i+1, 6, tview.NewTableCell(strings.Join(portStrs, ",")).SetTextColor(color))
 	}
 
-	// 恢复选择
+
 	ui.restoreSelection(selRow)
 }
 
-// getStats 获取容器统计信息
+// getStats 
 func (ui *ContainerUI) getStats(containerID string) (string, string) {
 	data, err := ui.docker.GetContainerStats(containerID)
 	if err != nil {
@@ -135,7 +134,7 @@ func (ui *ContainerUI) getStats(containerID string) (string, string) {
 	return fmt.Sprintf("%.2f%%", cpuP), fmt.Sprintf("%.1fMB", memVal)
 }
 
-// restoreSelection 恢复选择
+// restoreSelection 
 func (ui *ContainerUI) restoreSelection(selRow int) {
 	if selRow >= ui.common.Table.GetRowCount() {
 		selRow = ui.common.Table.GetRowCount() - 1
@@ -147,10 +146,10 @@ func (ui *ContainerUI) restoreSelection(selRow int) {
 	}
 }
 
-// ShowInspect 显示容器详情
+// ShowInspect 
 func (ui *ContainerUI) ShowInspect(containerID string) {
 	ui.common.Header.SetText(fmt.Sprintf("\n[white::b]%s[-:-:-] [yellow::] (Inspect: %s)[-:-:-]",
-		ui.common.AppName, containerID))
+		version.GetVersionString(), containerID))
 
 	data, err := ui.docker.InspectContainer(containerID)
 	if err != nil {
@@ -168,10 +167,10 @@ func (ui *ContainerUI) ShowInspect(containerID string) {
 	ui.common.App.SetFocus(view)
 }
 
-// ShowLogs 显示容器日志
+// ShowLogs 
 func (ui *ContainerUI) ShowLogs(containerID string) {
 	ui.common.Header.SetText(fmt.Sprintf("\n[white::b]%s[-:-:-] [yellow::] (Logs: %s)[-:-:-]",
-		ui.common.AppName, containerID))
+		version.GetVersionString(), containerID))
 
 	view := tview.NewTextView().
 		SetDynamicColors(true).
@@ -190,7 +189,7 @@ func (ui *ContainerUI) ShowLogs(containerID string) {
 	ui.common.App.SetFocus(view)
 }
 
-// Start 启动容器
+// Start 
 func (ui *ContainerUI) Start() {
 	if ui.common.SelectedID == "" {
 		return
@@ -200,7 +199,7 @@ func (ui *ContainerUI) Start() {
 		ui.RefreshList)
 }
 
-// Stop 停止容器
+// Stop 
 func (ui *ContainerUI) Stop() {
 	if ui.common.SelectedID == "" {
 		return
@@ -213,7 +212,7 @@ func (ui *ContainerUI) Stop() {
 		}, nil)
 }
 
-// Delete 删除容器
+// Delete 
 func (ui *ContainerUI) Delete() {
 	if ui.common.SelectedID == "" {
 		return

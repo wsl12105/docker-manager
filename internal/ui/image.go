@@ -1,24 +1,22 @@
-// Package ui 用户界面组件
+// Package ui 
 package ui
 
 import (
 	"fmt"
 	"strings"
 
-	// 这个包用于类型定义，虽然代码中没有直接使用，但编译时需要
-	_ "github.com/docker/docker/api/types/image"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/wsl12105/docker-manager/internal/docker"
 )
 
-// ImageUI 镜像UI管理器
+// ImageUI 
 type ImageUI struct {
 	common *Common
 	docker *docker.Client
 }
 
-// NewImageUI 创建镜像UI管理器
+// NewImageUI 
 func NewImageUI(common *Common, docker *docker.Client) *ImageUI {
 	return &ImageUI{
 		common: common,
@@ -26,19 +24,19 @@ func NewImageUI(common *Common, docker *docker.Client) *ImageUI {
 	}
 }
 
-// RefreshList 刷新镜像列表
+// RefreshList 
 func (ui *ImageUI) RefreshList() {
 	selRow, _ := ui.common.Table.GetSelection()
 	ui.common.Table.Clear()
 
-	// 设置表头
+	
 	headers := []string{"IMAGE ID", "REPOSITORY", "TAG", "SIZE"}
 	for i, h := range headers {
 		ui.common.Table.SetCell(0, i,
 			tview.NewTableCell(h).SetTextColor(tcell.ColorYellow).SetExpansion(1))
 	}
 
-	// 获取镜像列表
+	
 	list, err := ui.docker.ListImages()
 	if err != nil {
 		return
@@ -68,11 +66,11 @@ func (ui *ImageUI) RefreshList() {
 		}
 	}
 
-	// 恢复选择
+	
 	ui.restoreSelection(selRow)
 }
 
-// addRow 添加表格行
+// addRow
 func (ui *ImageUI) addRow(row int, idShort, repo, tag, size, reference string) {
 	ui.common.Table.SetCell(row, 0, tview.NewTableCell(idShort).SetReference(reference))
 	ui.common.Table.SetCell(row, 1, tview.NewTableCell(repo))
@@ -80,7 +78,7 @@ func (ui *ImageUI) addRow(row int, idShort, repo, tag, size, reference string) {
 	ui.common.Table.SetCell(row, 3, tview.NewTableCell(size))
 }
 
-// restoreSelection 恢复选择
+// restoreSelection 
 func (ui *ImageUI) restoreSelection(selRow int) {
 	if selRow >= ui.common.Table.GetRowCount() {
 		selRow = ui.common.Table.GetRowCount() - 1
@@ -92,7 +90,7 @@ func (ui *ImageUI) restoreSelection(selRow int) {
 	}
 }
 
-// Tag 标记镜像
+// Tag 
 func (ui *ImageUI) Tag(newTag string) {
 	if newTag != "" && ui.common.SelectedID != "" {
 		_ = ui.docker.TagImage(ui.common.SelectedID, newTag)
@@ -100,14 +98,14 @@ func (ui *ImageUI) Tag(newTag string) {
 	}
 }
 
-// ShowTagInput 显示标签输入对话框
+// ShowTagInput 
 func (ui *ImageUI) ShowTagInput() {
 	if ui.common.SelectedID != "" {
 		ui.common.ShowInput("New Tag (repo:tag):", ui.Tag)
 	}
 }
 
-// Delete 删除镜像
+// Delete 
 func (ui *ImageUI) Delete() {
 	if ui.common.SelectedID == "" {
 		return
