@@ -33,7 +33,6 @@ func main() {
 		fmt.Println("Please start the Docker service:")
 		fmt.Println("  • Linux: sudo systemctl start docker")
 		//fmt.Println("  • macOS: open -a Docker")
-		//fmt.Println("  • Windows: 启动 Docker Desktop")
 		fmt.Println("\nPress Ctrl+C to Exit")
 		
 
