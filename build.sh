@@ -14,7 +14,7 @@ go build -ldflags "\
 -s -w \
 -X github.com/wsl12105/docker-manager/internal/version.BuildDate=${BUILD_DATE} \
 -X github.com/wsl12105/docker-manager/internal/version.GitCommit=${GIT_COMMIT}" \
--o dm ./cmd/docker-manager
+-o dm ./cmd
 
 if [ $? -eq 0 ]; then
     SIZE=$(ls -lh dm | awk '{print $5}')
