@@ -1,0 +1,185 @@
+// Package ui 用户界面组件
+package ui
+
+import (
+	"fmt"
+	"os"
+	"os/exec"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
+)
+
+// Common 通用UI组件
+type Common struct {
+	App         *tview.Application
+	Pages       *tview.Pages
+	Header      *tview.TextView
+	InfoView    *tview.TextView
+	Table       *tview.Table
+	IsOperating bool
+	SelectedID  string
+	AppName     string
+	AppVersion  string
+}
+
+// NewCommon 创建通用UI组件
+func NewCommon(appName, appVersion string) *Common {
+	c := &Common{
+		App:        tview.NewApplication(),
+		Pages:      tview.NewPages(),
+		AppName:    appName,
+		AppVersion: appVersion,
+	}
+
+	c.Header = tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignCenter)
+	c.Header.SetTextColor(tcell.ColorBlack).
+		SetBackgroundColor(tcell.ColorGreen)
+
+	c.InfoView = tview.NewTextView().
+		SetDynamicColors(true).
+		SetWrap(true)
+	c.InfoView.SetBorder(true).SetTitle(" Command Help ")
+
+	c.Table = tview.NewTable().
+		SetSelectable(true, false).
+		SetFixed(1, 1)
+	c.Table.SetSelectedStyle(tcell.StyleDefault.
+		Background(tcell.ColorBlue).
+		Foreground(tcell.ColorWhite))
+	c.Table.SetBorder(true)
+
+	c.resetHeader()
+
+	c.Table.SetSelectionChangedFunc(func(row, col int) {
+		if row > 0 {
+			if cell := c.Table.GetCell(row, 0); cell != nil {
+				if ref := cell.GetReference(); ref != nil {
+					c.SelectedID = ref.(string)
+				} else {
+					c.SelectedID = cell.Text
+				}
+			}
+		}
+	})
+
+	return c
+}
+
+// resetHeader 重置头部
+func (c *Common) resetHeader() {
+	c.Header.SetText(fmt.Sprintf("\n[white::b]%s - %s[-:-:-]", c.AppName, c.AppVersion))
+}
+
+// RunAsyncAction 异步执行操作
+func (c *Common) RunAsyncAction(msg string, action func(), onComplete func()) {
+	c.IsOperating = true
+	row, _ := c.Table.GetSelection()
+	if row > 0 {
+		c.Table.SetCell(row, 2, tview.NewTableCell("[yellow]"+msg))
+	}
+
+	go func() {
+		action()
+		c.App.QueueUpdateDraw(func() {
+			c.IsOperating = false
+			if onComplete != nil {
+				onComplete()
+			}
+		})
+	}()
+}
+
+// ShowConfirm 显示确认对话框
+func (c *Common) ShowConfirm(message string, onConfirm func(), onCancel func()) {
+	modal := tview.NewModal().
+		SetText(message).
+		AddButtons([]string{"OK", "Cancel"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			if buttonLabel == "OK" && onConfirm != nil {
+				onConfirm()
+			} else if onCancel != nil {
+				onCancel()
+			}
+			c.Pages.RemovePage("modal")
+			c.App.SetFocus(c.Table)
+		})
+	c.Pages.AddPage("modal", modal, true, true)
+	c.App.SetFocus(modal)
+}
+
+// ShowInput 显示输入对话框
+func (c *Common) ShowInput(label string, onSubmit func(string)) {
+	form := tview.NewForm()
+	input := tview.NewInputField().SetLabel(label).SetFieldWidth(30)
+
+	form.AddFormItem(input).
+		AddButton("OK", func() {
+			onSubmit(input.GetText())
+			c.Pages.RemovePage("input")
+			c.App.SetFocus(c.Table)
+		}).
+		AddButton("Cancel", func() {
+			c.Pages.RemovePage("input")
+			c.App.SetFocus(c.Table)
+		})
+
+	form.SetBorder(true).SetTitle(" Input ")
+
+	flex := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 11, 1, true).
+			AddItem(nil, 0, 1, false), 50, 1, true).
+		AddItem(nil, 0, 1, false)
+
+	c.Pages.AddPage("input", flex, true, true)
+	c.App.SetFocus(form)
+}
+
+// RunExec 执行容器命令
+func (c *Common) RunExec(containerID string) {
+	c.App.Suspend(func() {
+		cmd := exec.Command("docker", "exec", "-it", containerID, "/bin/sh")
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		_ = cmd.Run()
+	})
+}
+
+// SetupInputCapture 设置输入捕获
+func (c *Common) SetupInputCapture(handlers map[rune]func()) {
+	c.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyCtrlC {
+			c.App.Stop()
+			return nil
+		}
+
+		front, _ := c.Pages.GetFrontPage()
+		if front != "main" {
+			if event.Key() == tcell.KeyEsc {
+				c.Pages.RemovePage(front)
+				c.resetHeader()
+				c.App.SetFocus(c.Table)
+				return nil
+			}
+			return event
+		}
+
+		if c.IsOperating {
+			return nil
+		}
+
+		if handler, exists := handlers[event.Rune()]; exists {
+			handler()
+			return nil
+		}
+
+		return event
+	})
+}
