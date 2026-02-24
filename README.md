@@ -41,7 +41,7 @@ git clone https://github.com/yourusername/docker-manager.git
 cd docker-manager
 
 # Build
-go build -o dm ./cmd/docker-manager
+bash build.sh
 
 # Run
 ./dm
