@@ -1,47 +1,47 @@
 # Docker Manager (DM)
 
-一个基于终端的 Docker 管理工具，提供直观的 TUI 界面来管理 Docker 容器和镜像。
+A terminal-based Docker management tool providing an intuitive TUI interface for managing Docker containers and images.
 
 ![Docker Manager Screenshot](screenshot.png)
 
-## 功能特性
+## Features
 
-### 容器管理
-- 📋 查看所有容器列表（运行中+已停止）
-- 📊 实时监控容器 CPU 和内存使用情况
-- 🔍 查看容器详细信息（inspect）
-- 📜 查看容器日志
-- ▶️ 启动/停止容器
-- 🗑️ 删除容器
-- 💻 进入容器执行命令（exec）
+### Container Management
+- 📋 View all containers (running + stopped)
+- 📊 Real-time monitoring of container CPU and memory usage
+- 🔍 View container details (inspect)
+- 📜 View container logs
+- ▶️ Start/Stop containers
+- 🗑️ Delete containers
+- 💻 Execute commands inside containers (exec)
 
-### 镜像管理
-- 🖼️ 查看所有镜像列表
-- 🏷️ 给镜像添加标签
-- 🗑️ 删除镜像
+### Image Management
+- 🖼️ View all images
+- 🏷️ Tag images
+- 🗑️ Delete images
 
-### 界面特性
-- 🎨 彩色终端界面
-- ⌨️ 完整的键盘快捷键支持
-- 🔄 自动刷新（2秒间隔）
-- 📱 响应式布局
+### Interface Features
+- 🎨 Colorful terminal interface
+- ⌨️ Full keyboard shortcut support
+- 🔄 Auto-refresh (2-second interval)
+- 📱 Responsive layout
 
-## 安装
+## Installation
 
-### 前置要求
-- Go 1.21 或更高版本
-- Docker 服务正在运行
-- 当前用户有权限访问 Docker（或者在 sudo 下运行）
+### Prerequisites
+- Go 1.21 or higher
+- Docker service running
+- Current user has permission to access Docker (or run with sudo)
 
-### 从源码安装
+### Install from Source
 
 ```bash
-# 克隆仓库
+# Clone the repository
 git clone https://github.com/yourusername/docker-manager.git
 cd docker-manager
 
-# 编译
+# Build
 go build -o dm ./cmd/docker-manager
 
-# 运行
+# Run
 ./dm
