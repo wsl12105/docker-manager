@@ -41,7 +41,7 @@ git clone https://github.com/yourusername/docker-manager.git
 cd docker-manager
 
 # 编译
-go build -o dm ./cmd/docker-manager
+bash build.sh
 
 # 运行
 ./dm

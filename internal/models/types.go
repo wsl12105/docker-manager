@@ -1,19 +1,19 @@
-// Package models 定义数据模型
+// Package models 
 package models
 
-// AppConfig 应用配置
+// AppConfig 
 type AppConfig struct {
 	Name    string
 	Version string
 }
 
-// ContainerStats 容器统计信息
+// ContainerStats 
 type ContainerStats struct {
 	CPU string
 	MEM string
 }
 
-// TableRow 表格行数据
+// TableRow 
 type TableRow struct {
 	ID      string
 	Columns []string
@@ -21,7 +21,7 @@ type TableRow struct {
 	Ref     interface{}
 }
 
-// ModalAction 模态框操作
+// ModalAction 
 type ModalAction struct {
 	Title   string
 	Message string
