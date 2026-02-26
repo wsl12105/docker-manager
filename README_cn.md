@@ -44,4 +44,4 @@ cd docker-manager
 bash build.sh
 
 # 运行
-./dm
+./dist/dm
