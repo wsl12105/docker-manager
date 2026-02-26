@@ -98,7 +98,7 @@ func (c *Common) RunAsyncAction(msg string, action func(), onComplete func()) {
 func (c *Common) ShowConfirm(message string, onConfirm func(), onCancel func()) {
 	modal := tview.NewModal().
 		SetText(message).
-		AddButtons([]string{"OK", "Cancel"}).
+		AddButtons([]string{"Cancel","OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			if buttonLabel == "OK" && onConfirm != nil {
 				onConfirm()
