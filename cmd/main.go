@@ -8,11 +8,27 @@ import (
 	"github.com/wsl12105/docker-manager/internal/ui"
 )
 
+const (
+    
+    styleBold      = "\033[1m"
+    styleUnderline = "\033[4m"
+    styleItalic    = "\033[3m"
+    styleReset     = "\033[0m"
+    
+    
+    colorRed    = "\033[31m"
+    colorGreen  = "\033[32m"
+    colorYellow = "\033[33m"
+    colorBlue   = "\033[34m"
+    colorPurple = "\033[35m"
+    colorCyan   = "\033[36m"
+)
+
 func main() {
 	
 	dockerClient, err := docker.NewClient()
 	if err != nil {
-		fmt.Printf("❌ Unable to create Docker client: %v\n", err)
+		fmt.Printf(colorRed + "❌ Unable to create Docker client: %v\n" + colorReset, err)
 		fmt.Println("Please ensure that Docker is installed and configured correctly")
 		fmt.Println("\nPress Ctrl+C to Exit")
 		
@@ -29,10 +45,10 @@ func main() {
 
 	
 	if err := dockerClient.CheckDockerRunning(); err != nil {
-		fmt.Printf("❌%v\n", err)
+		fmt.Printf(colorRed + styleBold + "❌ %v\n" + colorReset, err)
 		fmt.Println("Please start the Docker service:")
-		fmt.Println("  • Linux: sudo systemctl start docker")
-		//fmt.Println("  • macOS: open -a Docker")
+		fmt.Println(colorGreen + "  • Linux: sudo systemctl start docker" + colorReset)
+		fmt.Println("  • macOS: open -a Docker")
 		fmt.Println("\nPress Ctrl+C to Exit")
 		
 
