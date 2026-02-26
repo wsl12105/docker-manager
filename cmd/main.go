@@ -49,7 +49,7 @@ func main() {
 		fmt.Printf(colorRed + styleBold + "❌ %v\n" + colorReset, err)
 		fmt.Println("Please start the Docker service:")
 		fmt.Println(colorGreen + "  • Linux: sudo systemctl start docker" + colorReset)
-		fmt.Println("  • macOS: open -a Docker")
+		fmt.Println(colorGreen + "  • macOS: open -a Docker" + colorReset)
 		fmt.Println("\nPress Ctrl+C to Exit")
 		
 
