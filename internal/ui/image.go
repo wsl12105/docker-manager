@@ -1,4 +1,4 @@
-// Package ui 
+// Package ui UI组件包
 package ui
 
 import (
@@ -7,6 +7,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/wsl12105/docker-manager/internal/config"
 	"github.com/wsl12105/docker-manager/internal/docker"
 )
 
@@ -36,15 +37,22 @@ func (ui *ImageUI) RefreshList() {
 			tview.NewTableCell(h).SetTextColor(tcell.ColorYellow).SetExpansion(1))
 	}
 
-	
+	// 获取镜像列表
 	list, err := ui.docker.ListImages()
 	if err != nil {
+		ui.common.ShowError(fmt.Sprintf("Failed to list images: %v", err), nil)
 		return
 	}
 
 	rowIdx := 1
 	for _, img := range list {
-		idShort := img.ID[7:19]
+		// 安全获取镜像ID，格式为 sha256:xxxxx，需要去掉前缀并截取
+		idShort := img.ID
+		if len(img.ID) > config.ImageIDDisplayLength {
+			idShort = img.ID[config.ImageIDPrefixLength:config.ImageIDDisplayLength]
+		} else if len(img.ID) > config.ImageIDPrefixLength {
+			idShort = img.ID[config.ImageIDPrefixLength:]
+		}
 		sizeStr := fmt.Sprintf("%.2fMB", float64(img.Size)/1024/1024)
 
 		tags := img.RepoTags
@@ -90,30 +98,39 @@ func (ui *ImageUI) restoreSelection(selRow int) {
 	}
 }
 
-// Tag 
+// Tag 为镜像添加标签
 func (ui *ImageUI) Tag(newTag string) {
-	if newTag != "" && ui.common.SelectedID != "" {
-		_ = ui.docker.TagImage(ui.common.SelectedID, newTag)
+	if newTag != "" && ui.common.GetSelectedID() != "" {
+		if err := ui.docker.TagImage(ui.common.GetSelectedID(), newTag); err != nil {
+			ui.common.ShowError(fmt.Sprintf("Failed to tag image: %v", err), nil)
+			return
+		}
 		ui.RefreshList()
 	}
 }
 
-// ShowTagInput 
+// ShowTagInput 显示标签输入框
 func (ui *ImageUI) ShowTagInput() {
-	if ui.common.SelectedID != "" {
+	if ui.common.GetSelectedID() != "" {
 		ui.common.ShowInput("New Tag (repo:tag):", ui.Tag)
 	}
 }
 
-// Delete 
+// Delete 删除镜像
 func (ui *ImageUI) Delete() {
-	if ui.common.SelectedID == "" {
+	if ui.common.GetSelectedID() == "" {
 		return
 	}
-	ui.common.ShowConfirm("Delete image "+ui.common.SelectedID+"?",
+	ui.common.ShowConfirm("Delete image "+ui.common.GetSelectedID()+"?",
 		func() {
 			ui.common.RunAsyncAction("Deleting...",
-				func() { _, _ = ui.docker.RemoveImage(ui.common.SelectedID, false) },
+				func() {
+					if _, err := ui.docker.RemoveImage(ui.common.GetSelectedID(), false); err != nil {
+						ui.common.App.QueueUpdateDraw(func() {
+							ui.common.ShowError(fmt.Sprintf("Failed to delete image: %v", err), nil)
+						})
+					}
+				},
 				ui.RefreshList)
 		}, nil)
 }

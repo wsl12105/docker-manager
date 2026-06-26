@@ -63,7 +63,11 @@ func main() {
 	}
 
 
+	// 创建应用实例
 	app := ui.NewApp(dockerClient)
+
+	// 设置优雅退出处理
+	defer app.Stop()
 
 	if err := app.Run(); err != nil {
 		fmt.Printf("❌ DM execution failed: %v\n", err)
