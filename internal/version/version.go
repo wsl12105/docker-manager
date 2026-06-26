@@ -10,7 +10,7 @@ const (
 	AppName = "DM (Docker Manager)"
 	
 	// Version 
-	Version = "v1.5.0"
+	Version = "v1.6.0"
 	
 	// BuildDate 
 	BuildDate = "unknown"
